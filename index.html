@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Battle for Treasure v1.0.0 RedAge V3</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141414'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='system-ui,sans-serif' font-size='36' font-weight='700' fill='%23f5f5f5'%3EF%3C/text%3E%3C/svg%3E" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-elevated: #111111;
+      --bg-card: #141414;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.14);
+      --text: #ededed;
+      --text-muted: #888888;
+      --text-dim: #666666;
+      --accent: #f5f5f5;
+      --accent-soft: rgba(255, 255, 255, 0.06);
+      --code-bg: #1a1a1a;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --radius: 10px;
+      --radius-lg: 14px;
+      --sidebar-w: 240px;
+      --max-content: 720px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 2rem;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 20%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .layout {
+      display: flex;
+      align-items: stretch;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      flex-shrink: 0;
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      align-self: stretch;
+      padding: 0;
+      border-right: 1px solid var(--border);
+      background: rgba(10, 10, 10, 0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .sidebar .nav {
+      position: sticky;
+      top: 0;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 1rem 2rem;
+    }
+
+    .nav-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      padding: 0.75rem 0.5rem 0.35rem;
+    }
+
+    .nav a {
+      display: block;
+      padding: 0.4rem 0.5rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      background: var(--accent-soft);
+    }
+
+    .nav a.active {
+      color: var(--text);
+      background: var(--accent-soft);
+    }
+
+    main {
+      flex: 1;
+      min-width: 0;
+      padding: 3rem 2.5rem 12rem;
+      max-width: calc(var(--max-content) + 5rem);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero {
+      margin-bottom: 3rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    h1 {
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-sub {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.15rem;
+    }
+
+    .hero-sub-line {
+      margin: 0;
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      letter-spacing: -0.015em;
+      color: var(--text-muted);
+    }
+
+    .hero-sub-line:first-child {
+      white-space: nowrap;
+      font-size: clamp(0.78rem, 1.15vw + 0.65rem, 1.0625rem);
+    }
+
+    .hero-sub-line:last-child {
+      color: #b8b8b8;
+      font-weight: 500;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1.75rem;
+    }
+
+    .meta-item {
+      padding: 0.85rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .meta-item dt {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-item dd {
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .meta-item dd a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .meta-item dd a:hover {
+      text-decoration: underline;
+    }
+
+    .price-hero {
+      margin-top: 1.75rem;
+      padding: 1.35rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, var(--bg-card) 55%);
+      border: 1px solid rgba(74, 222, 128, 0.28);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.06) inset;
+    }
+
+    .price-hero-label {
+      margin: 0 0 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+
+    .price-hero-value {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: var(--success);
+    }
+
+    .price-hero-value span {
+      font-size: 0.45em;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .price-hero-pay {
+      margin: 0.65rem 0 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 2rem;
+      min-width: 0;
+    }
+
+    #contact {
+      scroll-margin-top: 2.5rem;
+      min-height: 12rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.6rem;
+      color: var(--text);
+    }
+
+    p { color: var(--text-muted); margin-bottom: 0.85rem; }
+    p strong, li strong { color: var(--text); font-weight: 500; }
+
+    ul, ol {
+      color: var(--text-muted);
+      padding-left: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    li { margin-bottom: 0.35rem; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.35rem;
+      margin: 1rem 0;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+
+    .steps li {
+      position: relative;
+      padding-left: 2.25rem;
+      margin-bottom: 1rem;
+      counter-increment: step;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0.1rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+    }
+
+    pre, code {
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.8rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      color: #c4c4c4;
+      line-height: 1.55;
+      margin: 0.75rem 0;
+    }
+
+    code:not(pre code) {
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: #d4d4d4;
+    }
+
+    .file-label {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 0.35rem;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .install-block {
+      margin: 2rem 0;
+      padding-top: 0.25rem;
+    }
+
+    .install-block > h3 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .install-note {
+      padding: 0.9rem 1.1rem;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    .install-note strong { color: var(--text); }
+
+    .path-pair {
+      display: grid;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    @media (min-width: 640px) {
+      .path-pair { grid-template-columns: 1fr 1fr; }
+    }
+
+    .path-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .path-box-header {
+      padding: 0.45rem 0.85rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .path-box pre {
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0;
+    }
+
+    .file-list li {
+      padding: 0.35rem 0;
+      padding-left: 1.1rem;
+      position: relative;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+    }
+
+    .file-list li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+    }
+
+    .change-card .where {
+      margin-bottom: 0.75rem;
+    }
+
+    .change-card .where dt {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 0.2rem;
+    }
+
+    .change-card .where dd {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    .change-card .where dd code {
+      color: var(--text);
+    }
+
+    .change-card .add-label {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin: 0.75rem 0 0.35rem;
+      text-align: center;
+    }
+
+    .change-card pre {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 0.72rem;
+      white-space: pre;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .change-card pre::-webkit-scrollbar {
+      height: 5px;
+    }
+
+    .change-card pre::-webkit-scrollbar-thumb {
+      background: var(--border-hover);
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    td { color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.72rem;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .tag.yes { color: var(--success); border-color: rgba(74, 222, 128, 0.2); }
+    .tag.no { color: #f87171; border-color: rgba(248, 113, 113, 0.2); }
+
+    .timeline {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1.25rem 0;
+    }
+
+    .timeline-item {
+      flex: 1;
+      min-width: 140px;
+      padding: 1rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .timeline-item .time {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .timeline-item .label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .gallery-scroll-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 1.25rem 0 0.5rem;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      letter-spacing: 0.02em;
+    }
+
+    .gallery-scroll-hint::after {
+      content: '→';
+      opacity: 0.7;
+    }
+
+    .map-gallery-wrap {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin: 1.5rem 0 0;
+    }
+
+    .map-gallery {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: stretch;
+      gap: 1rem;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      padding: 0.25rem 0 1rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-hover) transparent;
+    }
+
+    .map-gallery::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .map-gallery::-webkit-scrollbar-thumb {
+      background: var(--border-hover);
+      border-radius: 4px;
+    }
+
+    figure.map-card {
+      flex: 0 0 auto;
+      width: clamp(220px, 70vw, 300px);
+      min-width: 220px;
+      margin: 0;
+      scroll-snap-align: start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      margin: 1rem 0 0;
+      aspect-ratio: 16 / 9;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .video-embed iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .video-poster-link {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: inherit;
+      background: #000;
+    }
+
+    .video-poster-link img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+
+    .video-play-btn {
+      position: relative;
+      z-index: 1;
+      width: 68px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(255, 0, 0, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .video-poster-link:hover .video-play-btn {
+      transform: scale(1.06);
+      background: #ff0000;
+    }
+
+    .video-play-btn::after {
+      content: '';
+      margin-left: 4px;
+      border-style: solid;
+      border-width: 10px 0 10px 16px;
+      border-color: transparent transparent transparent #fff;
+    }
+
+    .map-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: middle;
+    }
+
+    .map-card figcaption {
+      padding: 0.75rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text);
+      border-top: 1px solid var(--border);
+    }
+
+    .map-card figcaption span {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-dim);
+    }
+
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.15rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .contact-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      min-width: 4.5rem;
+    }
+
+    .contact-value {
+      color: var(--text);
+      font-size: 0.95rem;
+      text-decoration: none;
+    }
+
+    a.contact-value:hover {
+      text-decoration: underline;
+    }
+
+    .closing {
+      margin-top: 4rem;
+      padding: 2rem 0 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .closing p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 32rem;
+      margin: 0 auto;
+    }
+
+    .closing strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.82rem;
+    }
+
+    .mobile-nav {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .sidebar { display: none; }
+      main {
+        margin-left: 0;
+        padding: 1.5rem 1.25rem 4rem;
+      }
+      .mobile-nav {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        -webkit-overflow-scrolling: touch;
+      }
+      .mobile-nav a {
+        flex-shrink: 0;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <nav class="nav">
+        <div class="nav-label">Contents</div>
+        <a href="#introduction">Introduction</a>
+        <a href="#demo-video">In-game video</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#system">In-game system</a>
+        <a href="#protection">Anti-cheat</a>
+        <a href="#roles">Roles</a>
+        <a href="#installation">Installation</a>
+        <a href="#configuration">Configuration</a>
+        <a href="#package">What you get</a>
+        <a href="#payment">Payment</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </aside>
+
+    <main>
+      <nav class="mobile-nav" aria-label="Quick navigation">
+        <a href="#introduction">Intro</a>
+        <a href="#demo-video">In-game</a>
+        <a href="#screenshots">Photos</a>
+        <a href="#system">System</a>
+        <a href="#protection">Security</a>
+        <a href="#installation">Install</a>
+        <a href="#package">Package</a>
+        <a href="#payment">Payment</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <header class="hero" id="introduction">
+        <div class="badge"><span class="badge-dot"></span> v1.0.0 · RedAge V3 · RAGE:MP</div>
+        <h1>Battle for Treasure</h1>
+        <div class="hero-sub">
+          <p class="hero-sub-line">PvP event for RedAge V3 three independent locations, hourly schedule, 50&nbsp;m zone.</p>
+          <p class="hero-sub-line">One valid player claims the reward.</p>
+        </div>
+        <div class="price-hero">
+          <p class="price-hero-label">Price</p>
+          <p class="price-hero-value">$69.99 <span>USD</span></p>
+          <p class="price-hero-pay">Payment: USDT (TRC-20). Exact amount confirmed before you send.</p>
+        </div>
+        <dl class="meta-grid">
+          <div class="meta-item">
+            <dt>Author</dt>
+            <dd>Farko</dd>
+          </div>
+          <div class="meta-item">
+            <dt>Discord</dt>
+            <dd><a href="#">farkopanich</a></dd>
+          </div>
+          <div class="meta-item">
+            <dt>Platform</dt>
+            <dd>RAGE:MP</dd>
+          </div>
+          <div class="meta-item">
+            <dt>Server</dt>
+            <dd>RedAge V3</dd>
+          </div>
+        </dl>
+      </header>
+
+      <section id="system">
+        <h2>What the system is and how it works</h2>
+        <p><strong>“Battle for Treasure”</strong> is a PvP event. The map has three fully independent locations, each with its own reward. If someone claims location 1, locations 2 and 3 stay active in the same hour. Up to three winners per hour are possible (one per location).</p>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="time">XX:55</div>
+            <div class="label">Warning in chat and CoolMsg</div>
+          </div>
+          <div class="timeline-item">
+            <div class="time">XX:00</div>
+            <div class="label">Markers and interaction at locations</div>
+          </div>
+        </div>
+
+        <h3 id="demo-video">How the system works (in-game)</h3>
+        <p>Gameplay footage of the event.</p>
+        <div class="video-embed" id="video-embed"></div>
+
+        <h3>What the player sees</h3>
+        <ul>
+          <li>Permanent blip at each location (sprite 94, yellow, short range)</li>
+          <li>Active location: yellow marker id 40 and interaction (~2 m)</li>
+          <li>50 m PvP zone only the sole valid player in the zone can claim the reward</li>
+        </ul>
+
+        <h3>Claiming the reward</h3>
+        <ol class="steps">
+          <li>Go to a location after start (XX:00) or after <code>/startbattlefortreasure</code></li>
+          <li>Inside the 50 m zone: if more than one valid player is present, nobody can claim the treasure</li>
+          <li>When you are the only valid player, press <strong>E</strong> on the marker</li>
+          <li>~2 s animation → inventory check → reward (default Case0 x1)</li>
+          <li>That location closes until the next hour; everyone sees the winner message</li>
+        </ol>
+
+        <div class="card">
+          <div class="card-title">Three independent locations</div>
+          <p style="margin:0;"><code>Config.cs</code> defines coordinates and names. Location 1 does not disable 2 and 3 three different winners in one hour are possible.</p>
+        </div>
+
+        <h3 id="screenshots">In-game screenshots</h3>
+        <p>Full event flow in one strip: map, blips, markers, zone rules, notifications, wins, and reward. Scroll left to right.</p>
+        <div class="map-gallery-wrap">
+          <p class="gallery-scroll-hint">Scroll</p>
+          <div class="map-gallery" tabindex="0" aria-label="In-game screenshots">
+          <figure class="map-card">
+            <a href="https://imgur.com/a/5Wgt5yN" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/LrhHqoy.png" alt="Battle for Treasure location 1 on the GTA map" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 1
+              <span>Battle for Treasure #1 MAP</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/za6x1F0" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/lVaW29Z.png" alt="Battle for Treasure location 2 on the GTA map" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 2
+              <span>Battle for Treasure #2 MAP</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/H3lwREn" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/q48v0DS.png" alt="Battle for Treasure location 3 on the GTA map" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 3
+              <span>Battle for Treasure #3 MAP</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/LVxVyUl" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/1jvtMUF.png" alt="Battle for Treasure location 1 blip on the in-game map" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 1
+              <span>Battle for Treasure #1</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/n8H2DlN" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/Fr2EVMs.png" alt="Battle for Treasure location 2 blip on the in-game map" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 2
+              <span>Battle for Treasure #2</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/7VEIOwG" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/G88gZc4.png" alt="Battle for Treasure location 3 blip on the in-game map" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 3
+              <span>Battle for Treasure #3</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/p846wsK" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/8J2MvZj.png" alt="Battle for Treasure location 1 marker interaction" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 1
+              <span>Battle for Treasure #1 INTERACTION</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/Bhu7Yyr" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/9RomsIk.png" alt="Battle for Treasure location 2 marker interaction" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 2
+              <span>Battle for Treasure #2 INTERACTION</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/a0paY5R" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/BEaAsNo.png" alt="Battle for Treasure location 3 marker interaction" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 3
+              <span>Battle for Treasure #3 INTERACTION</span>
+            </figcaption>
+          </figure>
+
+          <figure class="map-card">
+            <a href="https://imgur.com/a/7iJGvEM" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/M0gwHZT.png" alt="Battle for Treasure blocked when multiple players are in the zone" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Zone contested
+              <span>Battle for Treasure #2 + PLAYERS ZONE</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/qGoVa7a" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/DQaRCgo.png" alt="Battle for Treasure notification 5 minutes before start" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              XX:55 · 5 minutes before start
+              <span>Battle for Treasure NOTIFICATION</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/syfRAxV" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/uqa5sxK.png" alt="Battle for Treasure notification when the event starts" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              XX:00 · Event started
+              <span>Markers and interaction active</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/k3rtsLm" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/mJQhASg.png" alt="Battle for Treasure location 1 treasure claimed" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 1
+              <span>Battle for Treasure #1 WIN</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/XtPyIH1" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/j5Z3EIj.png" alt="Battle for Treasure location 2 treasure claimed" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 2
+              <span>Battle for Treasure #2 WIN</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/ePEs8x1" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/6aBX59K.png" alt="Battle for Treasure location 3 treasure claimed" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Location 3
+              <span>Battle for Treasure #3 WIN</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/ofcpsaV" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/wAjhlwl.png" alt="Battle for Treasure reward case in player inventory" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              In inventory
+              <span>Battle for Treasure REWARD</span>
+            </figcaption>
+          </figure>
+          <figure class="map-card">
+            <a href="https://imgur.com/a/c72Efrb" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.imgur.com/g1fD62e.png" alt="Battle for Treasure opening reward case for random loot" width="600" height="315" loading="lazy">
+            </a>
+            <figcaption>
+              Opening the case
+              <span>Battle for Treasure #3 OPEN · random loot</span>
+            </figcaption>
+          </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="protection">
+        <h2>Anti-cheat &amp; exploit protection</h2>
+        <p>All critical logic runs <strong>server-side</strong> in <code>Repository.cs</code>. The client script only plays sound and visual effects after the server confirms a valid claim. It cannot grant items or start a capture on its own.</p>
+
+        <div class="card">
+          <div class="card-title">Server authority</div>
+          <ul>
+            <li>Reward is added only via <code>CharsRepository.AddNewItem</code> on the server after all checks pass.</li>
+            <li>Interaction uses a registered <code>ColShapeEnums.BattleForTreasure</code> cylinder (~2&nbsp;m), not a free remote event anyone can spam.</li>
+            <li>Player positions for the 50&nbsp;m zone are read on the server (<code>Main.GetPlayersInRadiusOfPosition</code>), not trusted from the client.</li>
+            <li>Each successful claim is written to the server log (player name, spot, hour).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Double validation (start + finish)</div>
+          <ul>
+            <li><strong>On press E:</strong> <code>TryValidateClaim</code>: event active, spot free, alone in zone, alive, inventory space, not blocked admin, etc.</li>
+            <li><strong>After ~2&nbsp;s animation:</strong> <code>TryValidateClaimCompletion</code> runs the same rules again before any item is given.</li>
+            <li>If the player dies, leaves the zone, gets company, loses inventory space, or is interrupted during the animation → capture is cancelled, no reward.</li>
+            <li><code>Main.OnAntiAnim</code> during pickup reduces animation-cancel abuse during the wait.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Zone &amp; PvP rules (anti-abuse)</div>
+          <ul>
+            <li>Treasure can be claimed only when <strong>exactly one valid player</strong> is inside the 50&nbsp;m server zone.</li>
+            <li>Dead players (<code>Health &lt;= 0</code>) are ignored and cannot claim.</li>
+            <li>Admins level 1-8 are <strong>not counted</strong> in the zone and <strong>cannot</strong> take the reward. They cannot block real players or claim while on duty.</li>
+            <li>Only one player per location can capture at a time (<code>ClaimingPlayer</code> lock).</li>
+            <li>After a reward is taken, that location is deactivated (marker + interaction removed) until the next event. No double claim on the same spot.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">State safety &amp; disconnects</div>
+          <ul>
+            <li>Per-spot <code>lock (spot.Sync)</code> prevents race conditions when two players interact at once.</li>
+            <li>If a player disconnects while claiming → <code>OnPlayerDisconnect</code> clears the spot so it is not stuck for others.</li>
+            <li>Invalid spot index, missing character/session data, demorgan, or anti-anim down → claim blocked silently or with an error message.</li>
+          </ul>
+        </div>
+
+        <div class="install-note" style="margin-top:1rem;">
+          <strong>Note:</strong> No script is 100% immune to every cheat on RAGE:MP, but this module does not hand out rewards from the client and re-checks position and zone state immediately before payout. Level 9 admins can still test claims and start/stop the event via commands. That is intentional for server owners.
+        </div>
+      </section>
+
+      <section id="roles">
+        <h2>Roles</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Commands</th>
+              <th>Counted in zone</th>
+              <th>Reward</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Player</td>
+              <td>None</td>
+              <td>Yes</td>
+              <td>If alone and valid</td>
+            </tr>
+            <tr>
+              <td>Admin 1-8</td>
+              <td>None</td>
+              <td>No</td>
+              <td>Cannot claim</td>
+            </tr>
+            <tr>
+              <td>Admin 9</td>
+              <td>5 commands</td>
+              <td>Yes</td>
+              <td>Can (for testing)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Admin commands (level 9)</h3>
+        <pre>/startbattlefortreasure        manually starts all 3 locations
+/stopbattlefortreasure         disables markers and interaction
+/tpbattlefortreasure [1-3]     teleport to a location
+/bfttestzone [0|1|2]           zone test
+/bftzoninfo [1-3]              debug info</pre>
+        <p>Admins 1-8 are not counted in the zone player count. If you are the only valid player and only admins 1-8 are nearby, you can still claim the treasure.</p>
+      </section>
+
+      <section id="installation">
+        <h2>Installation (step by step)</h2>
+        <p><strong>Requirements:</strong> RAGE:MP + RedAge V3.</p>
+        <p>All paths below are relative to your <strong>server project root</strong> (e.g. <code>redage_v3/</code>). Do not copy into the wrong folder the structure must match the RedAge V3 / NeptuneEvo layout.</p>
+
+        <div class="install-block">
+          <h3>Package structure</h3>
+          <p>The zip archive contains a <code>BattleForTreasure/</code> folder with this guide and a <code>source/</code> subfolder with all files to copy:</p>
+          <pre>BattleForTreasure/
+  index.html             ← guide (this document)
+  source/
+    dotnet/resources/NeptuneEvo/Events/BattleForTreasure/   ← server code
+      Config.cs
+      Repository.cs
+      Events.cs
+      AdminCommands.cs
+      Models/SpotRuntime.cs
+    src_client/events/battleForTreasure.js                  ← client code</pre>
+        </div>
+
+        <div class="install-block">
+          <h3>Step 1: Copy files from source/</h3>
+          <p>Copy files <strong>manually</strong> (or via FileZilla / WinSCP on your host). Do not rename files or change paths inside the project.</p>
+
+          <h4 style="margin:1.25rem 0 0.5rem;font-size:0.95rem;font-weight:600;">Server: copy the entire folder into your project</h4>
+          <p>From the package, take the full <code>BattleForTreasure</code> folder with all files and place it at the same path in your server project.</p>
+          <div class="path-pair">
+            <div class="path-box">
+              <div class="path-box-header">From package</div>
+              <pre>source/dotnet/resources/NeptuneEvo/
+  Events/BattleForTreasure/
+    Config.cs
+    Repository.cs
+    Events.cs
+    AdminCommands.cs
+    Models/SpotRuntime.cs</pre>
+            </div>
+            <div class="path-box">
+              <div class="path-box-header">Into your project</div>
+              <pre>dotnet/resources/NeptuneEvo/
+  Events/BattleForTreasure/
+    Config.cs
+    Repository.cs
+    Events.cs
+    AdminCommands.cs
+    Models/SpotRuntime.cs</pre>
+            </div>
+          </div>
+          <p>When done, this folder must exist in your project:</p>
+          <p class="file-label">dotnet/resources/NeptuneEvo/Events/BattleForTreasure/</p>
+          <ul class="file-list">
+            <li>Config.cs</li>
+            <li>Repository.cs</li>
+            <li>Events.cs</li>
+            <li>AdminCommands.cs</li>
+            <li>Models/SpotRuntime.cs</li>
+          </ul>
+
+          <h4 style="margin:1.5rem 0 0.5rem;font-size:0.95rem;font-weight:600;">Client: copy one file</h4>
+          <p>The client script goes in the <code>events</code> folder next to other event scripts (e.g. <code>matwar.js</code>).</p>
+          <div class="path-pair">
+            <div class="path-box">
+              <div class="path-box-header">From package</div>
+              <pre>source/src_client/events/
+  battleForTreasure.js</pre>
+            </div>
+            <div class="path-box">
+              <div class="path-box-header">Into your project</div>
+              <pre>src_client/events/
+  battleForTreasure.js</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="install-block">
+          <h3>Step 2: Four edits in existing files (manual)</h3>
+          <div class="install-note">
+            <strong>Important:</strong> The event registers via <code>[ServerEvent]</code> and <code>[Interaction]</code> attributes. You do not add new classes in <code>Main.cs</code>: only the timer call and one enum value. <strong>Without these four edits the system will not work.</strong>
+          </div>
+
+          <div class="card change-card">
+            <div class="card-title">Edit A: CustomColShape.cs</div>
+            <dl class="where">
+              <dt>File</dt>
+              <dd><code>dotnet/resources/NeptuneEvo/Functions/CustomColShape.cs</code></dd>
+              <dt>Where exactly</dt>
+              <dd>Inside <code>enum ColShapeEnums</code>: e.g. after <code>QuestBonus</code> (around line 201).</dd>
+            </dl>
+            <p class="add-label">Add one line:</p>
+            <pre>BattleForTreasure,</pre>
+          </div>
+
+          <div class="card change-card">
+            <div class="card-title">Edit B: Main.cs (minute timer)</div>
+            <dl class="where">
+              <dt>File</dt>
+              <dd><code>dotnet/resources/NeptuneEvo/Main.cs</code></dd>
+              <dt>Where exactly</dt>
+              <dd>In <code>playedMinutesTrigger()</code> (starts around line 3648): <strong>after</strong> the <code>Events.HeliCrash</code> block, <strong>before</strong> <code>DayOfWeek</code> (near AirDrop / HeliCrash).</dd>
+            </dl>
+            <p class="add-label">Add:</p>
+            <pre>Events.BattleForTreasure.Repository.MinuteTimer(now.Hour, now.Minute);</pre>
+          </div>
+
+          <div class="card change-card">
+            <div class="card-title">Edit C: src_client/index.js</div>
+            <dl class="where">
+              <dt>File</dt>
+              <dd><code>src_client/index.js</code></dd>
+              <dt>Where exactly</dt>
+              <dd>Next to other <code>require('./events/...')</code>, around line 440, e.g. below <code>matwar.js</code>.</dd>
+            </dl>
+            <p class="add-label">Add:</p>
+            <pre>require('./events/battleForTreasure.js');</pre>
+          </div>
+
+          <div class="card change-card">
+            <div class="card-title">Edit D: Players/Disconnect/Repository.cs</div>
+            <dl class="where">
+              <dt>File</dt>
+              <dd><code>dotnet/resources/NeptuneEvo/Players/Disconnect/Repository.cs</code></dd>
+              <dt>Where exactly</dt>
+              <dd>In <code>OnPlayerDisconnect</code>, immediately <strong>after</strong> <code>HeliCrash.ClearBox</code> (around line 70), <strong>before</strong> <code>World.War.OnPlayerDisconnect</code> (around line 73). Do not confuse with the edit in <code>Main.cs</code>!</dd>
+            </dl>
+            <p class="add-label">Add one line:</p>
+            <pre>NeptuneEvo.Events.BattleForTreasure.Repository.OnPlayerDisconnect(player);</pre>
+            <p style="margin:0.75rem 0 0;font-size:0.88rem;color:var(--text-dim);">If a player disconnects while claiming treasure, that location is freed for others.</p>
+          </div>
+        </div>
+
+        <div class="install-block">
+          <h3>Step 3: Build and restart</h3>
+          <p>After copying and manual edits, build server and client, then restart the server.</p>
+          <p class="file-label">Server (C#)</p>
+          <pre>cd dotnet/resources/NeptuneEvo
+dotnet build</pre>
+          <p class="file-label">Client (JavaScript bundle)</p>
+          <pre>cd src_client
+npm run build</pre>
+          <p>Finally, <strong>restart the entire RAGE:MP server</strong> so new scripts load.</p>
+        </div>
+
+        <div class="install-block">
+          <h3>Step 4: Verify it works</h3>
+          <ol class="steps">
+            <li>Log in as a regular player or level 9 admin.</li>
+            <li>Start the event manually as admin: <code>/startbattlefortreasure</code>, or wait for automatic start at <strong>XX:00</strong> (after the warning at <strong>XX:55</strong>).</li>
+            <li>You should see a blip on the map; at an active location, marker type <strong>40</strong> and interaction.</li>
+            <li>Enter the 50 m zone and be the <strong>only valid player</strong> (alive, not admin 1-8 blocking multi-player claim).</li>
+            <li>Press interaction on the marker (E) → effect, sound, particles → item in inventory.</li>
+            <li>Confirm that location closed until the next hour (marker gone, blip remains).</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="configuration">
+        <h2>Configuration</h2>
+        <p class="file-label">dotnet/resources/NeptuneEvo/Events/BattleForTreasure/Config.cs</p>
+        <table>
+          <thead>
+            <tr><th>Parameter</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Spots[]</td><td>Coordinates and names of 3 locations</td></tr>
+            <tr><td>RewardItem / RewardCount</td><td>Reward (default Case0 x1)</td></tr>
+            <tr><td>ZoneRadiusMeters</td><td>PvP zone (50)</td></tr>
+            <tr><td>InteractRadiusMeters</td><td>Interaction (~2 m)</td></tr>
+            <tr><td>WarningMinute / StartMinute</td><td>55 / 0</td></tr>
+            <tr><td>HeadAdminLevel</td><td>Level for admin commands (9)</td></tr>
+            <tr><td>MarkerType, BlipSprite, BlipColor…</td><td>Visual parameters</td></tr>
+          </tbody>
+        </table>
+        <p>For rewards, use an <code>ItemId</code> your inventory system supports.</p>
+      </section>
+
+      <section id="package">
+        <h2>What the buyer gets</h2>
+        <ul>
+          <li>Full system (<code>source/</code>, version 1.0.0) with server-side anti-cheat / exploit protection (see <a href="#protection">Anti-cheat</a> section)</li>
+          <li>Video: <a href="#demo-video">how the system works in-game</a> (on this page)</li>
+          <li>Video: server installation (separate guide, sent after payment)</li>
+          <li>This guide · Discord support (24-48 h)</li>
+          <li>Warranty: free bug fixes if any (3-7 business days)</li>
+          <li>Localization: all module texts in any language at no extra charge</li>
+          <li>Help with Config.cs (coordinates, reward, schedule, radius)</li>
+        </ul>
+        <p>The installation video is sent after payment and is not the same as the in-game demo above.</p>
+
+        <h3>Refunds (USDT TRC-20)</h3>
+        <p><span class="tag yes">YES</span> You did not receive what was shown/described; critical bugs not fixed within 7 business days, if any exist.</p>
+        <p><span class="tag no">NO</span> Works as in the video; you dislike the concept; your own code changes; wrong RedAge version; 14+ days without contact.</p>
+      </section>
+
+      <section id="payment">
+        <h2>Payment and license</h2>
+        <ol class="steps">
+          <li>Discord <strong>farkopanich</strong></li>
+          <li>Author sends wallet address and exact USDT amount</li>
+          <li>You send USDT (TRC-20)</li>
+          <li>You send the TXID</li>
+          <li>Delivery: zip, video links, support, localization</li>
+        </ol>
+        <div class="card">
+          <div class="card-title">License</div>
+          <p style="margin:0;">1 system / 1 project. Not allowed: resale, leaking files, multiple servers on one purchase.</p>
+        </div>
+        <p>Delivery: within 24 h after confirmed payment. Localization: 1-2 days by agreement.</p>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <div class="contact-list">
+          <div class="contact-item">
+            <span class="contact-label">Discord</span>
+            <span class="contact-value">farkopanich</span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Gmail</span>
+            <a href="mailto:farkopanich@gmail.com" class="contact-value">farkopanich@gmail.com</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="closing" id="thanks">
+        <p>
+          <strong>Thank you for purchasing the “Battle for Treasure” system.</strong><br>
+          I hope we work well together and that the event brings solid PvP content to your server.
+          If you need help, reach out.
+        </p>
+      </div>
+
+      <footer>
+        Battle for Treasure v1.0.0 · Farko
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const links = document.querySelectorAll('.nav a, .mobile-nav a');
+
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const sel = link.getAttribute('href');
+        if (!sel || !sel.startsWith('#')) return;
+        const target = document.querySelector(sel);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', sel);
+      });
+    });
+
+    const sections = [...links]
+      .map((a) => document.querySelector(a.getAttribute('href')))
+      .filter(Boolean);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          links.forEach((a) => {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach((s) => observer.observe(s));
+
+    (function initDemoVideo() {
+      const embedBox = document.getElementById('video-embed');
+      const videoId = 'Ch15tdBfseg';
+      const watchUrl = 'https://www.youtube.com/watch?v=' + videoId;
+      const thumbUrl = 'https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg';
+
+      if (!embedBox) return;
+
+      if (location.protocol === 'file:') {
+        embedBox.innerHTML =
+          '<a class="video-poster-link" href="' + watchUrl + '" target="_blank" rel="noopener noreferrer">' +
+            '<img src="' + thumbUrl + '" alt="Play Battle for Treasure demo on YouTube" referrerpolicy="no-referrer">' +
+            '<span class="video-play-btn" aria-hidden="true"></span>' +
+          '</a>';
+        return;
+      }
+
+      const params = new URLSearchParams({ rel: '0' });
+      if (location.origin && location.origin !== 'null') {
+        params.set('origin', location.origin);
+      }
+      const iframe = document.createElement('iframe');
+      iframe.id = 'demo-video-frame';
+      iframe.title = 'Battle for Treasure: how the system works in-game';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?' + params.toString();
+      embedBox.appendChild(iframe);
+    })();
+  </script>
+</body>
+</html>
